@@ -1,9 +1,9 @@
 {
   "name": "aosora-shiori",
-  "displayName": "Aosora SHIORI",
+  "displayName": "Aosora SHIORI zh-cn",
   "publisher": "kanadelab",
-  "description": "Aosora SHIORI extension",
-  "version": "0.0.1",
+  "description": "Aosora SHIORI extension zh-cn",
+  "version": "1.0.9",
   "repository": "https://github.com/kanadelab/aosora-shiori.git",
   "icon": "aosora-icon.png",
   "engines": {
@@ -45,7 +45,7 @@
       },
       {
         "command": "aosora.sendcaret",
-        "title": "ゴーストに送信"
+        "title": "发送到人格"
       }
     ],
     "breakpoints": [
@@ -86,28 +86,28 @@
           {
             "type": "aosora",
             "request": "launch",
-            "name": "蒼空デバッグ",
+            "name": "苍空调试",
             "port": 27016
           }
         ],
         "configurationSnippets": [
           {
-            "label": "蒼空デバッグ",
-            "description": "Aosora SHIORIを起動するための設定",
+            "label": "苍空调试",
+            "description": "用于启动Aosora SHIORI的设置",
             "body": {
               "type": "aosora",
               "request": "launch",
-              "name": "蒼空デバッグ",
+              "name": "苍空调试",
               "port": 27016
             }
           },
           {
-            "label": "蒼空アタッチ",
-            "description": "Aosora SHIORIに接続するための設定",
+            "label": "苍空连接",
+            "description": "连接到Aosora SHIORI的设置",
             "body": {
               "type": "aosora",
               "request": "attach",
-              "name": "蒼空アタッチ",
+              "name": "蒼空连接",
               "port": 27016
             }
           }
@@ -117,7 +117,7 @@
             "properties": {
               "port": {
                 "type": "number",
-                "description": "接続するポート番号",
+                "description": "要连接的端口号",
                 "default": 27016
               }
             },
@@ -127,7 +127,7 @@
             "properties": {
               "port": {
                 "type": "number",
-                "description": "接続するポート番号",
+                "description": "要连接的端口号",
                 "default": 27016
               }
             },

@@ -5,7 +5,7 @@ import * as childProcess from 'child_process';
 import GetMessage from './messages';
 import { IsBinaryExecutablePlatform } from './utility';
 
-//ランタイム（SSP）を起動
+//启动运行时（SSP）
 export function LaunchDebuggerRuntime(extensionPath:string, runtimePath:string, ghostPath:string, projPath:string, onProcessExit?:()=>void){
 
 	let runtimeResolvedPath = runtimePath;
@@ -24,7 +24,7 @@ export function LaunchDebuggerRuntime(extensionPath:string, runtimePath:string, 
 		throw new Error(GetMessage().debugger003);
 	}
 
-	//プロセス起動
+	//进程启动
 	const scriptPath = ((IsBinaryExecutablePlatform()) ? (extensionPath + "\\launch.bat") : ("aosora-launch.sh"));
 	const command = `"${scriptPath}" "${runtimePath}" "${ghostPath}" "${projPath}"`;
 	childProcess.exec(command, (error, stdout, stderr) => {
@@ -32,7 +32,7 @@ export function LaunchDebuggerRuntime(extensionPath:string, runtimePath:string, 
 			console.error(error);
 		}
 		else {
-			//プロセス正常終了
+			//流程正常结束
 		}
 		if(onProcessExit){
 			onProcessExit();

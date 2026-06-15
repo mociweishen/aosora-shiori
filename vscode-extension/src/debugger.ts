@@ -12,12 +12,12 @@ import GetMessage from './messages';
 
 const DEFAULT_PORT_NUMBER = 27016;
 
-//aosoraデバッガむけの設定情報
+//面向aosora调试程序的设置信息
 interface AosoraDebugConfiguration extends vscode.DebugConfiguration {
 	port: number
 };
 
-//設定情報の補完、解決を行う
+//进行设定信息的补充、解决
 export class DebugConfigurationProvider implements vscode.DebugConfigurationProvider {
 	resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: {}, token?: vscode.CancellationToken): vscode.ProviderResult<AosoraDebugConfiguration> {
 		return {
@@ -44,7 +44,7 @@ export class DebugAdapterFactory implements vscode.DebugAdapterDescriptorFactory
 
 
 /**
- * 蒼空デバッグセッション
+ * 苍空调试会话
  */
 class AosoraDebugSession extends DebugSession {
 
@@ -56,19 +56,19 @@ class AosoraDebugSession extends DebugSession {
 		this.debugInterface = new AosoraDebuggerInterface();
 		this.extensionPath = extensionPath;
 
-		//各種コールバックを設定
+		//配置各种回调
 		this.debugInterface.onClose = () => {
 			this.sendEvent(new TerminatedEvent());
 		};
 
 		this.debugInterface.onConnect = (editorDebuggerRevision:string, runtimeDebuggerRevision:string) => {
 			if(editorDebuggerRevision !== runtimeDebuggerRevision){
-				this.sendEvent(new OutputEvent("ゴーストとVSCode拡張のデバッグ機能バージョンが異なるため、正常に通信できない可能性があります。\n"));
+				this.sendEvent(new OutputEvent("由于人格和VScode扩展的调试功能版本不同，可能无法正常通信。\n"));
 			}
 		}
 
 		this.debugInterface.onNetworkError = () => {
-			this.sendEvent(new OutputEvent("ゴーストとの通信でエラーが発生しました。", "stderr"));
+			this.sendEvent(new OutputEvent("与人格通信时出错。", "stderr"));
 		};
 
 		this.debugInterface.onBreak = (errorMessage:string|null) => {
@@ -113,8 +113,8 @@ class AosoraDebugSession extends DebugSession {
 					default: false
 				},
 				{
-					label: "キャッチされなかったエラー",
-					description: "実行時にエラーが発生したとき、キャッチされなかった場合に実行中断します。",
+					label: "未捕获的错误",
+					description: "当运行时发生错误且未被捕获时，程序会中断执行。",
 					filter: "uncaught",
 					default: true
 				}
@@ -132,23 +132,23 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//デバッグ起動のリクエスト（アタッチは別で存在している）
+	//调试启动的请求（附加/Attach 是另外存在的）
 	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: any) :Promise<void>{
 
-		//プロジェクトファイルをパース
+		//解析项目文件
 		const ghostProj = await vscode.workspace.findFiles("**/ghost.asproj");
 		if(ghostProj.length == 1){
-			//プロジェクトファイルを読む
+			//读取项目文件
 			const project = new ProjectParser();
 			const projPath = ghostProj[0].fsPath;
 			const debugPath = path.join(path.dirname(projPath), "debug.asproj");
 			await project.Parse(projPath);
 			await project.Parse(debugPath);
 
-			//起動する
+			//启动
 			if(project.runtimePath){
 				const aosoraDir = path.dirname(projPath);
-				const ghostPath = path.dirname(path.dirname(aosoraDir));	//プロジェクトの２階層上
+				const ghostPath = path.dirname(path.dirname(aosoraDir));	//项目上一层
 				try{
 					this.sendEvent(new OutputEvent(`${GetMessage().debugger007}\n`, "stdout"));
 					LaunchDebuggerRuntime(this.extensionPath, project.runtimePath, ghostPath, aosoraDir, () => {
@@ -177,13 +177,13 @@ class AosoraDebugSession extends DebugSession {
 			}
 		}
 		else if(ghostProj.length == 0) {
-			//terminateイベントを出す
+			//触发terminate事件
 			vscode.window.showErrorMessage(GetMessage().debugger010);
 			this.sendEvent(new TerminatedEvent());
 			return;
 		}
 		else {
-			//terminateイベントを出す
+			//触发terminate事件
 			vscode.window.showErrorMessage(GetMessage().debugger011);
 			this.sendEvent(new TerminatedEvent());
 			return;
@@ -192,12 +192,12 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//アタッチ
+	//附加
 	protected async attachRequest(response: DebugProtocol.AttachResponse, args: DebugProtocol.AttachRequestArguments, request?: DebugProtocol.Request) {
 
 		this.sendEvent(new OutputEvent(`${GetMessage().debugger012}\n`, "stdout"));
 
-		//純粋に接続する形
+		//纯粹连接的形式
 		try{
 			await this.debugInterface.Connect();
 		}
@@ -209,7 +209,7 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//例外ブレークポイント
+	//纯粹连接的形式
 	protected async setExceptionBreakPointsRequest(response: DebugProtocol.SetExceptionBreakpointsResponse, args: DebugProtocol.SetExceptionBreakpointsArguments, request?: DebugProtocol.Request): Promise<void> {
 		await this.debugInterface.WaitForConnect();
 		await this.debugInterface.SetExceptionBreakPoints(args.filters);
@@ -226,31 +226,31 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//ブレークポイント
+	//断点
 	protected async setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments, request?: DebugProtocol.Request): Promise<void> {
 		await this.debugInterface.WaitForConnect();
 
-		//ファイル名と行番号を取得
+		//获取文件名和行号
 		const filename = args.source.path ?? "";
 		const lines = args.lines ?? [];
 
-		//デバッガに送信する行数に変換
+		//转换为发送给调试器的行数
 		const debuggerBreakPoints = lines.map(o => {
 			return this.convertClientLineToDebugger(o);
 		})
 
-		//設定要求
+		//设定要求
 		const enabledLines = await this.debugInterface.SetBreakPoints(this.convertClientPathToDebugger(filename), debuggerBreakPoints);
 		const enabledLinesSet = new Set<number>(enabledLines);
 
-		//ブレークポイントの状態を取得
+		//转换为发送给调试器的行数
 		const editorBreeakPoints = lines.map(o => {
 			const bp = new Breakpoint(enabledLinesSet.has(o-1), o);
 			bp.setId(o);
 			return bp;
 		});
 
-		//完了
+		//完成
 		response.body = {
 			breakpoints: editorBreeakPoints
 		};
@@ -258,7 +258,7 @@ class AosoraDebugSession extends DebugSession {
 	}
 
 	protected threadsRequest(response: DebugProtocol.ThreadsResponse, request?: DebugProtocol.Request): void {
-		//Aosoraはシングルスレッドなので固定で返してしまう
+		//因为 Aosora 是单线程的，所以直接返回固定值。
 		response.body = {
 			threads: [
 				new Thread(1, "Aosora MainThread")
@@ -268,7 +268,7 @@ class AosoraDebugSession extends DebugSession {
 	}
 
 	protected stackTraceRequest(response: DebugProtocol.StackTraceResponse, args: DebugProtocol.StackTraceArguments, request?: DebugProtocol.Request): void {
-		//トレース情報を返す
+		//返回跟踪信息
 		response.body = {
 			stackFrames: []
 		};
@@ -282,25 +282,25 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//実行
+	//执行
 	protected async continueRequest(response: DebugProtocol.ContinueResponse, args: DebugProtocol.ContinueArguments, request?: DebugProtocol.Request): Promise<void>{
 		await this.debugInterface.Continue();
 		this.sendResponse(response);
 	}
 
-	//ステップオーバー
+	//布过
 	protected async nextRequest(response: DebugProtocol.NextResponse, args: DebugProtocol.NextArguments, request?: DebugProtocol.Request): Promise<void> {
 		await this.debugInterface.StepOver();
 		this.sendResponse(response);
 	}
 
-	//ステップイン
+	//步入
 	protected async stepInRequest(response: DebugProtocol.StepInResponse, args: DebugProtocol.StepInArguments, request?: DebugProtocol.Request): Promise<void> {
 		await this.debugInterface.StepIn();
 		this.sendResponse(response);
 	}
 
-	//ステップアウト
+	//步出
 	protected async stepOutRequest(response: DebugProtocol.StepOutResponse, args: DebugProtocol.StepOutArguments, request?: DebugProtocol.Request): Promise<void> {
 		await this.debugInterface.StepOut();
 		this.sendResponse(response);
@@ -317,7 +317,7 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//変数情報リクエスト
+	//变量信息请求
 	protected async scopesRequest(response: DebugProtocol.ScopesResponse, args: DebugProtocol.ScopesArguments, request?: DebugProtocol.Request): Promise<void> {
 
 		const scopes = await this.debugInterface.RequestEnumScopes(args.frameId);
@@ -329,7 +329,7 @@ class AosoraDebugSession extends DebugSession {
 
 	protected async variablesRequest(response: DebugProtocol.VariablesResponse, args: DebugProtocol.VariablesArguments, request?: DebugProtocol.Request): Promise<void> {
 
-		//変数
+		//变量
 		let variables: DebugProtocol.Variable[] = (await this.debugInterface.RequestObject(args.variablesReference)).map(o => this.convertVariable(o));
 
 		response.body = {
@@ -374,7 +374,7 @@ class AosoraDebugSession extends DebugSession {
 		}
 
 		if(args.context === 'hover'){
-			//ホバー時情報が正しくなくてもはなにもしない
+			//即使悬停时显示的信息不正确，也不做任何处理。
 			this.sendResponse(response);
 		}
 
@@ -385,7 +385,7 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//読み込みソースリクエスト
+	//读取源码请求
 	protected async loadedSourcesRequest(response: DebugProtocol.LoadedSourcesResponse, args: DebugProtocol.LoadedSourcesArguments, request?: DebugProtocol.Request): Promise<void> {
 		await this.debugInterface.WaitForConnect();
 		const sources = await this.debugInterface.RequestLoadedSource();
@@ -395,9 +395,9 @@ class AosoraDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
-	//ブレーク位置リクエスト
-	//NOTE: 動作が期待と違う（自動的に無効状態にするとかでない）ので無効にしておく
-	//		行内ブレークポイントの設定可能位置収集に近い
+	//中断位置请求
+	//NOTE: 由于行为与预期不符（例如没有自动设为无效状态），因此将其保持为禁用状态。
+	//		类似于收集行内断点可设置位置
 	/*
 	protected async breakpointLocationsRequest(response: DebugProtocol.BreakpointLocationsResponse, args: DebugProtocol.BreakpointLocationsArguments, request?: DebugProtocol.Request): Promise<void> {
 		if(!args.source.path){
@@ -417,7 +417,7 @@ class AosoraDebugSession extends DebugSession {
 	}
 	*/
 
-	//ヘルパ類
+	//辅助类
 	private createSource(filename: string) {
 		return new Source(basename(filename), this.convertDebuggerPathToClient(filename));
 	}

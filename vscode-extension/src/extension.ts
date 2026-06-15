@@ -9,16 +9,16 @@ export function activate(context: vscode.ExtensionContext) {
 	const createDiagnosticCollection = vscode.languages.createDiagnosticCollection("aosora-diagnostic");
 	const debugSendProvider = new DebugSendProvider(context.extensionPath, createDiagnosticCollection);
 
-	//ゴーストに送信コマンド
+	//向 Ghost 发送命令
 	const sendToGhostCommand = vscode.commands.registerCommand('aosora-shiori.sendToGhost', async (sendScript:SendScript, isError:boolean) => {
 		await debugSendProvider.SendToGhost(sendScript, isError);
 	});
 
-	//スクリプトエラー表示関係
+	//脚本错误显示关系
 	context.subscriptions.push(sendToGhostCommand);
 	context.subscriptions.push(vscode.languages.registerCodeLensProvider('aosora', debugSendProvider));
 
-	//デバッガ
+	//调试器
 	context.subscriptions.push(vscode.debug.registerDebugAdapterDescriptorFactory('aosora', new DebugAdapterFactory(context.extensionPath)));
 	context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('aosora', new DebugConfigurationProvider() ));
 

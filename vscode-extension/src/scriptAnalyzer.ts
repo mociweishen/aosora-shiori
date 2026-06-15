@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import {z} from 'zod';
-import {IsBinaryExecutablePlatform, IsJapaneseLanguage} from './utility';
+import {IsBinaryExecutablePlatform, IsJapaneseLanguage, IsChineseLanguage} from './utility';
 
 const AnalyzedSourceRange = z.object({
 	line: z.number(),
@@ -30,9 +30,12 @@ function AnalyzeScript(script:string, extensionPath:string):Promise<AnalyzeResul
 	const executablePath = ((IsBinaryExecutablePlatform()) ? (extensionPath + "/" + "aosora-analyzer.exe") : ("aosora-analyzer"));
 	let command = executablePath;
 
-	//日本語以外だったら英語で起動する
+	//根据语言环境设置分析器的语言
 	if(IsJapaneseLanguage()){
 		command += " --language ja-jp";
+	}
+	else if(IsChineseLanguage()){
+		command += " --language zh-cn";
 	}
 	else {
 		command += " --language en-us";
@@ -55,7 +58,7 @@ function AnalyzeScript(script:string, extensionPath:string):Promise<AnalyzeResul
 		.catch( () => ({error: true, message: "exec error"}));
 }
 
-//ランタイムベースのスクリプトアナライザ
+//基于运行时的脚本分析器
 export async function Analyze(document:vscode.TextDocument, extensionPath:string){
 	const str = document.getText();
 	return await AnalyzeScript(str,extensionPath);

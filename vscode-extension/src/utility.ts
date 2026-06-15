@@ -1,12 +1,18 @@
 
-//.exeバイナリを実行可能なプラットフォームかどうかを確認
-export function IsBinaryExecutablePlatform() :boolean{
+// 检查当前平台是否能够运行 .exe 二进制文件
+export function IsBinaryExecutablePlatform(): boolean {
     return process.platform === 'win32';
 }
 
-//言語設定が日本語かどうかを検出
-//vscodeは設定しづらいのでプライマリを英語にして国外ユーザには英語が常に表示されるようにしておく
-export function IsJapaneseLanguage():boolean{
+// 检测语言设置是否为日语
+// VS Code 的环境配置比较麻烦，因此主语言设为英语，让海外用户始终看到英文界面
+export function IsJapaneseLanguage(): boolean {
     const lang = (process.env.VSCODE_NLS_CONFIG && JSON.parse(process.env.VSCODE_NLS_CONFIG).locale) || '';
     return lang.startsWith('ja');
+}
+
+// 检测语言设置是否为中文（包括简体、繁体等）
+export function IsChineseLanguage(): boolean {
+    const lang = (process.env.VSCODE_NLS_CONFIG && JSON.parse(process.env.VSCODE_NLS_CONFIG).locale) || '';
+    return lang.startsWith('zh');
 }

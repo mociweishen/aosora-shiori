@@ -3,7 +3,7 @@ import {number, z} from 'zod';
 import * as Net from 'net';
 import { DEBUGGER_REVISION } from './version';
 
-//Aosora デバッガインターフェース
+//Aosora调试器接口
 type BreakPointRequest = {
 	filename: string,
 	lines: number[]
@@ -110,7 +110,7 @@ export class AosoraDebuggerInterface {
 	private isConnected = false;
 	private isConnectCancel = false;
 
-	//待機レスポンスリスト
+	//等待响应列表
 	private responseMap:Map<string, (body:any, error: any) => void>;
 
 	public constructor(){
@@ -130,7 +130,7 @@ export class AosoraDebuggerInterface {
 		throw new Error();
 	}
 
-	//ブレーク情報取得
+	//获取中断信息
 	public GetBreakInfo(){
 		return this.breakInfo;
 	}
@@ -141,7 +141,7 @@ export class AosoraDebuggerInterface {
 		});
 	}
 
-	//接続：内部
+	//连接：内部
 	private async ConnectInternal(){
 		return new Promise<void>((resolve, reject) => {
 				this.socketClient = Net.connect(27016, 'localhost', () => {
@@ -152,7 +152,7 @@ export class AosoraDebuggerInterface {
 				this.isConnected = true;
 			});
 
-			//受信
+			//接收
 			this.socketClient.on('data', (data => {
 				let offset = 0;
 				while(true){
@@ -161,7 +161,7 @@ export class AosoraDebuggerInterface {
 						break;
 					}					
 
-					//リクエスト処理
+					//请求处理
 					let requestObj = null;
 					try{
 						const dataStr = data.toString('utf8', offset, index);
@@ -176,11 +176,11 @@ export class AosoraDebuggerInterface {
 				
 			}));
 
-			//終了
+			//结束
 			this.socketClient.on('close', () => {
 				console.log('client-> connection is closed');
 				if(!this.isConnected){
-					//接続待ち
+					//等待连接
 					reject();
 				}
 				else{
@@ -190,10 +190,10 @@ export class AosoraDebuggerInterface {
 		});
 	}
 
-	//接続
+	//连接
 	public async Connect() {
 
-		//30秒待つ形
+		//等待30秒的形式
 		for(let i = 0; i < 30; i++){
 			if(this.isConnectCancel){
 				return;
@@ -201,22 +201,22 @@ export class AosoraDebuggerInterface {
 			try{
 				await this.ConnectInternal();
 
-				//バージョン要求
+				//版本请求
 				const versionInfo = await this.RequestVersion();	//接続成功
 				this.onConnect(DEBUGGER_REVISION, versionInfo.debuggerRevision);
 				return;
 			}
 			catch{
-				//接続待機
+				//连接待机
 				await this.Wait(1000);
 			}
 		}
 
-		//接続失敗
+		//连接失败
 		throw new Error();
 	}
 
-	//接続中の場合、それを待つ
+	//如果正在连接，则等待
 	public async WaitForConnect(){
 		return new Promise<void>((resolve) => {
 			if(!this.isConnected){
@@ -232,7 +232,7 @@ export class AosoraDebuggerInterface {
 		return this.isConnectCancel;
 	}
 
-	//リクエストの送信
+	//发送请求
 	public Send(requestType:string, requestBody: {}, callback?: (response:any, error:any) => void ){
 		const request = {
 			type: requestType,
@@ -241,20 +241,20 @@ export class AosoraDebuggerInterface {
 		};
 
 		if(callback){
-			//コールバック要求の場合コールバック用の一意IDを作成し待機列にいれる
+			//如果是回调请求，则生成用于回调的唯一ID，并将其加入等待队列。
 			request.id = randomUUID();
 			this.responseMap.set(request.id, callback);
 		}
 
-		//リクエスト送信、末尾に0をつけて終端にする
+		//发送请求时，在末尾添加0作为结束标志。
 		const buff = (new TextEncoder).encode(JSON.stringify(request));
 		const sendBuff = new Uint8Array(buff.length + 1);
 		sendBuff.set(buff);
-		sendBuff.set([0], buff.length);		//0終端で送る
+		sendBuff.set([0], buff.length);		//以0结尾发送
 		this.socketClient?.write(sendBuff);
 	}
 
-	//Promise版のSend
+	//Promise 版本的 Send
 	public async SendPromise(requestType: string, requestBody: {}):Promise<any>{
 		return new Promise((resolve, reject) => {
 			this.Send(requestType, requestBody, (r, e) => {
@@ -269,7 +269,7 @@ export class AosoraDebuggerInterface {
 
 	private Recv(requestObj:any) {
 
-		//受信時、ブレークヒットのようなクライアントからのリクエストか、ウォッチのようなレスポンスかを判断し、レスポンスならコールバックする必要がある
+		//接收时，需要判断是来自客户机的请求，还是监视的响应，如果是响应，则需要回调
 		const parsedRequest = DebuggerReceiveFormat.safeParse(requestObj);
 		if(!parsedRequest.success){
 			return;
@@ -308,15 +308,15 @@ export class AosoraDebuggerInterface {
 		}
 	}
 
-	//ブレークリクエスト
+	//中断请求
 	private RecvBreak(request: BreakHitRequest){
 		this.breakInfo = request;
 		this.onBreak(this.breakInfo.errorMessage);
 	}
 
-	//-- エディタ向けインターフェース
+	//-- 编辑器接口
 
-	//ブレークポイント設定（エディタ側都合でファイルごとに差し替えの形）
+	//断点设置（由于编辑器方面的原因，每个文件替换的形式）
 	public async SetBreakPoints(filename: string, lines: number[]):Promise<number[]>{
 		const requestBody = {
 			filename:  filename.replace("\\\\", "\\"),
@@ -330,7 +330,7 @@ export class AosoraDebuggerInterface {
 		this.NotifyError();
 	}
 
-	//例外ブレークポイント設定
+	//异常断点设置
 	public async SetExceptionBreakPoints(exceptions: string[]){
 		const requestBody = {
 			filters: exceptions
@@ -393,7 +393,7 @@ export class AosoraDebuggerInterface {
 		});
 	}
 
-	//デバッグ続行
+	//继续调试
 	public async Continue(){
 		await this.SendPromise("continue", {});
 	}

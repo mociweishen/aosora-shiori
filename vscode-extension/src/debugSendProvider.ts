@@ -38,7 +38,7 @@ export class DebugSendProvider implements vscode.CodeLensProvider{
 	public async SendFromMenu() {
 
 		if(!this.isAnalyzeSuccess){
-			//送信不可
+			//无法发送
 			return ;
 		}
 
@@ -50,12 +50,12 @@ export class DebugSendProvider implements vscode.CodeLensProvider{
 
 		if(this.lastSuccessAnalyzeResult && this.lastSuccessAnalyzeResult.functions){
 
-			//関数群の位置を検出しておくる
+			//检测函数组的位置
 			for(const func of this.lastSuccessAnalyzeResult.functions){
-				//カレットが位置に含むかをチェック
+				//检查光标是否包含在该位置范围内
 				const r = this.MakeSourceRange(func.range);
 				if(r.contains(position)){
-					//送信対象
+					//发送对象
 					const script = editor.document.getText(r);
 					this.SendToGhost({
 						scriptBody: script,
@@ -70,10 +70,10 @@ export class DebugSendProvider implements vscode.CodeLensProvider{
 	
 	public async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[]> {
 		
-		//aosora-analyzerを起動
+		//启动aosora-analyzer
 		const analyzeResult = await Analyze(document, this.extensionPath);
 		if(!analyzeResult.error){
-			//エラーなし
+			//无错误
 			this.diag.set(document.uri, []);
 			this.lastSuccessAnalyzeResult = analyzeResult;
 			this.isAnalyzeSuccess = true;
@@ -81,7 +81,7 @@ export class DebugSendProvider implements vscode.CodeLensProvider{
 		else {
 			this.isAnalyzeSuccess = false;
 
-			//認識できるエラーを吐いている場合、構文エラーなのでエディタに指摘内容を反映する
+			//如果抛出了可识别的错误，则说明是语法错误，因此需要将错误提示反映到编辑器中。
 			if(analyzeResult.message && analyzeResult.range){
 				const range = this.MakeSourceRange(analyzeResult.range);
 				if(range){
@@ -95,21 +95,21 @@ export class DebugSendProvider implements vscode.CodeLensProvider{
 				}
 			}
 			else {
-				//認識できないエラー：仕方ないので無視
+				//无法识别的错误：没办法，只能忽略。
 				this.diag.set(document.uri, []);
 			}
 		}
 
-		//最後に解析成功した情報を使用してCodeLendsを作る
-		//失敗時無効化していると、スクリプト記述中に表示ががたがたしてしまうため
+		//最后使用解析成功的信息来生成 CodeLens
+		//因为如果在失败时将其禁用，在编写脚本时会导致显示内容不断闪烁
 		if(this.lastSuccessAnalyzeResult && this.lastSuccessAnalyzeResult.functions){
 			const result:vscode.CodeLens[] = [];
 			for(const item of this.lastSuccessAnalyzeResult.functions){
 				const scriptRange = this.MakeSourceRange(item.range);
 				const script = document.getText(scriptRange);
 
-				//function または talk の部分があれば採用する
-				//解析エラー時、関数行のCodelends表示を維持する一方、どうみても関数ではないところに送信表示を出さないようにするため
+				//如果存在 function 或 talk 关键字，则采用该结果
+				//这样在解析报错时，既能保持函数行上的 CodeLens 显示，又能防止在明显不是函数的地方错误地显示发送提示。
 				const keyWordRange = document.getWordRangeAtPosition(new vscode.Position(item.range.line, item.range.column), functionPattern);;
 				if(keyWordRange){
 					const codeLens = new vscode.CodeLens(keyWordRange);

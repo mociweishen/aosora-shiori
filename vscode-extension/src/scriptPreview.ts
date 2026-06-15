@@ -14,7 +14,7 @@ const ERROR_CODE_PREVIEW_SCRIPT_ERROR = 4;
 
 let isExecuting = false;
 
-//unitやuseが追加されたので、ゴーストに送信する場合これらの情報が必要になる。
+//因为追加了unit和use，所以发送给 ghost 时需要这些信息。
 export type SendScript = {
 	scriptBody: string,
 	unit: string,
@@ -22,7 +22,7 @@ export type SendScript = {
 };
 
 
-//スクリプトプレビューイング
+//脚本预览
 export async function SendPreviewFunction(sendScript:SendScript, extensionPath:string){
 	if(isExecuting){
 		vscode.window.showErrorMessage(GetMessage().scriptPreview001);
@@ -34,7 +34,7 @@ export async function SendPreviewFunction(sendScript:SendScript, extensionPath:s
 		const executablePath = ((IsBinaryExecutablePlatform()) ? (extensionPath + "/" + "aosora-sstp.exe") : ("aosora-sstp.sh"));
 		let command = `"${executablePath}" "${outPath}"`;
 
-		//ワークスペースがあればパスに足す
+		//如果有工作区，则添加到路径
 		const projFiles = await vscode.workspace.findFiles("**/ghost.asproj", null, 1);
 		if(projFiles.length > 0){
 			const workspace = path.dirname(projFiles[0].fsPath);
@@ -52,10 +52,10 @@ export async function SendPreviewFunction(sendScript:SendScript, extensionPath:s
 		functionBody += "\r\n";
 		functionBody += sendScript.scriptBody;
 
-		//一時ファイルを用意して呼び出す
+		//调用临时文件
 		await fs.promises.writeFile(outPath, functionBody, 'utf-8');
 
-		//実行待ち
+		//等待执行
 		await new Promise<void>(r  => {
 			childProcess.exec(command, (error, stdout, stderr) => {
 				if(error){
@@ -75,14 +75,14 @@ export async function SendPreviewFunction(sendScript:SendScript, extensionPath:s
 
 function ExitCodeToString(code?:number){
 	if(code == ERROR_CODE_GHOST_NOT_FOUND) {
-		return "スクリプト送信先のゴーストが見つかりませんでした。";
+		return "找不到脚本目标的 ghost。";
 	}
 	else if(code == ERROR_CODE_GHOST_SCRIPT_ERROR) {
-		return "スクリプト読み込みエラーです。ゴーストのスクリプトが正しい状態で保存されているか確認してみてください。";
+		return "脚本读取错误。请检查 ghost 脚本是否保存正确。";
 	}
 	else if(code == ERROR_CODE_PREVIEW_SCRIPT_ERROR) {
-		return "プレビュースクリプトで読み込みエラーが発生しました。";
+		return "预览脚本出现读取错误。";
 	}
 	
-	return "プレビュー送信でエラーが発生しました。";
+	return "发送预览时出错。";
 }
