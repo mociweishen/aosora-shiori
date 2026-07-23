@@ -2,34 +2,34 @@
     <img src="assets/aosora-icon.svg" width="64">
     <div style="margin-left: 10px">
         <h2 style="display:inline">蒼空 / aosora-shiori</h2><br>
-        しおりをつくってみようプロジェクト
+        试试制作书签吧项目
     </div>
 </div>
 
-## これはなに？
-伺かゴースト用の SHIORI「蒼空」の開発プロジェクトです。
+## 这是什么？
+这是用于伺か（Ukagaka）幽灵的 SHIORI「蒼空」的开发项目的中文化分支。
 
-## ためしてみる
-ReleaseのところからデモゴーストやSHIORI本体のdllをダウンロードできます。
-VSCode向けのちょっとした拡張機能もあります。
+## 试试看
+可以从 Release 页面下载演示幽灵或 SHIORI 本体 dll。
+还有针对 VSCode 的小扩展功能。
 
-[wikiページ](https://github.com/kanadelab/aosora-shiori/wiki)に仕様を書き出したガイドなどもありますので、興味があれば見てみてください。
+[wiki页面](https://github.com/mociweishen/aosora-shiori/wiki) 上写有规格指南等，有兴趣的话可以看看。
 
-## 利用規約など
-配布している aosora.dll は伺かゴースト向けのSHIORI・SAORIとして自由に使用・配布いただけます。
-ソースファイルのライセンスはまだ定めていないので、個別に許可した場合を除いては個人利用や本プロジェクト参加のための使用にとどめてください。
-このプログラムは無保証です。このプログラムによって発生した現象について作者は責任を負いません。
+## 使用条款等
+分发的 aosora.dll 可作为伺か幽灵用的 SHIORI・SAORI 自由使用和分发。
+源文件的许可证尚未确定，因此除个别许可的情况外，请仅用于个人使用或参与本项目的开发。
+本程序无任何保证。作者对因本程序引发的任何现象不承担责任。
 
-## ビルドにかんして
-* リポジトリ内のゴースト(/ssp/*)を起動する場合
-  * aosora.dll のビルドが必要
-* vscode拡張(/vscode-extension/*)をビルドする場合
-  * aosora-sstp.exe のビルドが必要
+## 关于构建
+* 启动仓库内的幽灵（/ssp/*）时
+  * 需要构建 aosora.dll
+* 构建 vscode 扩展（/vscode-extension/*）时
+  * 需要构建 aosora-sstp.exe
 
-先にaosora-shiori.slnをビルドしてください。  
-ビルド生成物として、それぞれに必要なファイルが配置されます。
+请先构建 aosora-shiori.sln。  
+构建产物会分别配置好所需的文件。
 
-## そのほか
-* 月波 清火 (@tukinami_seika@fedibird.com) 様がアイコンを作ってくださいました。
+## 其他
+* 月波 清火（@tukinami_seika@fedibird.com）先生/女士为我们设计了图标。
 
-* jsoncpp (https://github.com/open-source-parsers/jsoncpp) をお借りしました。パブリックドメインのjsonシリアライザです。
+* 使用了 jsoncpp（https://github.com/open-source-parsers/jsoncpp）。这是一个公共领域的 JSON 序列化库。
