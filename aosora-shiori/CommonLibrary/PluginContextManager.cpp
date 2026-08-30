@@ -355,11 +355,11 @@ namespace sakura {
 		}
 	}
 
-	size_t PluginContextManager::GetArgumentCount() {
-		return PeekContext().GetCallContext().args.size();
+	uint32_t PluginContextManager::GetArgumentCount() {
+		return static_cast<uint32_t>(PeekContext().GetCallContext().args.size());
 	}
 
-	aosora::raw::ValueHandle PluginContextManager::GetArgument(size_t index) {
+	aosora::raw::ValueHandle PluginContextManager::GetArgument(uint32_t index) {
 		if (index < GetArgumentCount()) {
 			return GetCurrentHandleManager().CreateHandle(
 				PeekContext().GetCallContext().args[index]
@@ -391,10 +391,11 @@ namespace sakura {
 
 	void PluginContextManager::SetPluginError(aosora::raw::StringContainer errorMessage, int32_t errorCode) {
 		Reference<PluginError> pluginError = GetCurrentInterpreter().CreateNativeObject<PluginError>(std::string(errorMessage.body, errorMessage.len));
+		pluginError->SetErrorCode(errorCode);
 		PeekContext().GetCallContext().threwError = ScriptValue::Make(pluginError);
 	}
 
-	void PluginContextManager::FunctionCall(aosora::raw::ValueHandle function, const aosora::raw::ValueHandle* argv, size_t argc) {
+	void PluginContextManager::FunctionCall(aosora::raw::ValueHandle function, const aosora::raw::ValueHandle* argv, uint32_t argc) {
 
 		//戻り値と例外を発生させる関数では既存の情報をクリア
 		PeekContext().GetCallContext();
@@ -407,7 +408,7 @@ namespace sakura {
 
 			//引数の展開
 			std::vector<ScriptValueRef> args;
-			for (size_t i = 0; i < argc; i++) {
+			for (uint32_t i = 0; i < argc; i++) {
 				args.push_back(GetCurrentHandleManager().GetValue(argv[i]));
 			}
 
@@ -424,7 +425,7 @@ namespace sakura {
 		}
 	}
 
-	aosora::raw::ValueHandle PluginContextManager::NewClassInstance(aosora::raw::ValueHandle classObject, const aosora::raw::ValueHandle* argv, size_t argc) {
+	aosora::raw::ValueHandle PluginContextManager::NewClassInstance(aosora::raw::ValueHandle classObject, const aosora::raw::ValueHandle* argv, uint32_t argc) {
 
 		//戻り値と例外を発生させる関数では既存の情報をクリア
 		PeekContext().GetCallContext();
@@ -435,7 +436,7 @@ namespace sakura {
 
 			//引数の展開
 			std::vector<ScriptValueRef> args;
-			for (size_t i = 0; i < argc; i++) {
+			for (uint32_t i = 0; i < argc; i++) {
 				args.push_back(GetCurrentHandleManager().GetValue(argv[i]));
 			}
 
@@ -564,7 +565,7 @@ namespace sakura {
 		if (m != nullptr) {
 			Reference<ScriptArray> items = GetCurrentInterpreter().CreateArray();
 			for (auto it : m->GetInternalCollection()) {
-				items->Add(it.second);
+				items->Add(ScriptValue::Make(it.first));
 			}
 			return GetCurrentHandleManager().CreateHandle(ScriptValue::Make(items));
 		}

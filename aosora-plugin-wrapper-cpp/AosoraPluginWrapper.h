@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <string>
+#include <vector>
 #include "AosoraPluginRaw.h"
 
 namespace aosora {
@@ -34,6 +35,7 @@ namespace aosora {
 		double ToNumber() const;
 		bool ToBool() const;
 		std::string ToString() const;
+		void* ToMemoryBuffer(size_t* size) const;
 
 		uint32_t GetValueType() const;
 		bool IsNull() const;
@@ -60,8 +62,8 @@ namespace aosora {
 		void SetValue(const std::string& key, const ValueWrapper& value, ValueWrapper* error) const;
 		void SetValue(uint32_t key, const ValueWrapper& value, ValueWrapper* error) const;
 
-		ValueWrapper CallFunction(const ValueWrapper* argv, size_t argc, ValueWrapper* error) const;
-		ValueWrapper CreateInstance(const ValueWrapper* argv, size_t argc, ValueWrapper* error) const;
+		ValueWrapper CallFunction(const ValueWrapper* argv, uint32_t argc, ValueWrapper* error) const;
+		ValueWrapper CreateInstance(const ValueWrapper* argv, uint32_t argc, ValueWrapper* error) const;
 
 		std::string GetErrorMessage() const;
 		uint32_t GetErrorCode() const;
@@ -91,6 +93,9 @@ namespace aosora {
 		const raw::AosoraRawAccessor* rawAccessor;
 
 	private:
+		//ValueWrapper の配列から生ハンドルの配列を作る
+		static std::vector<raw::ValueHandle> ToHandles(const ValueWrapper* argv, uint32_t argc);
+
 		static raw::StringContainer ToStringContainer(const std::string& str) {
 			if (str.empty()) {
 				return { nullptr, 0 };
@@ -148,16 +153,21 @@ namespace aosora {
 		}
 
 		// 引数の数を取得
-		size_t GetArgumentCount() const {
+		uint32_t GetArgumentCount() const {
 			return rawAccessor->GetArgumentCount();
 		}
 
-		ValueWrapper GetArgument(size_t index) const {
+		ValueWrapper GetArgument(uint32_t index) const {
 			return ValueWrapper(rawAccessor, rawAccessor->GetArgument(index));
 		}
 
 		void SetReturnValue(const ValueWrapper& value) const {
 			rawAccessor->SetReturnValue(value.handle);
+		}
+
+		// aosoraにエラーオブジェクトを送出する。Errorオブジェクトでない場合は送出されずfalseが返る
+		bool SetError(const ValueWrapper& error) const {
+			return rawAccessor->SetError(error.handle);
 		}
 
 		void SetPluginError(const std::string& errorMessage, int32_t errorCode = 0) const {
@@ -277,8 +287,10 @@ namespace aosora {
 			}
 		}
 
-		ValueWrapper CallFunction(const ValueWrapper& function, const ValueWrapper* argv, size_t argc, ValueWrapper* error) const {
-			rawAccessor->CallFunction(function.handle, reinterpret_cast<const raw::ValueHandle*>(argv), argc);
+		ValueWrapper CallFunction(const ValueWrapper& function, const ValueWrapper* argv, uint32_t argc, ValueWrapper* error) const {
+			//ValueWrapper と ValueHandle はメモリレイアウトが異なるのでハンドルの配列を作り直す
+			std::vector<raw::ValueHandle> handles = ToHandles(argv, argc);
+			rawAccessor->CallFunction(function.handle, handles.empty() ? nullptr : handles.data(), argc);
 
 			if (!rawAccessor->HasLastError()) {
 				return ValueWrapper(rawAccessor, rawAccessor->GetLastReturnValue());
@@ -291,8 +303,10 @@ namespace aosora {
 			}
 		}
 
-		ValueWrapper CreateInstance(const ValueWrapper& classType, const ValueWrapper* argv, size_t argc, ValueWrapper* error) const {
-			auto handle = rawAccessor->CreateInstance(classType.handle, reinterpret_cast<const raw::ValueHandle*>(argv), argc);
+		ValueWrapper CreateInstance(const ValueWrapper& classType, const ValueWrapper* argv, uint32_t argc, ValueWrapper* error) const {
+			//ValueWrapper と ValueHandle はメモリレイアウトが異なるのでハンドルの配列を作り直す
+			std::vector<raw::ValueHandle> handles = ToHandles(argv, argc);
+			auto handle = rawAccessor->CreateInstance(classType.handle, handles.empty() ? nullptr : handles.data(), argc);
 
 			if (!rawAccessor->HasLastError()) {
 				return ValueWrapper(rawAccessor, handle);
@@ -388,8 +402,8 @@ namespace aosora {
 		 *	バイナリ互換性チェック。必ず aosora_plugin_get_version() で呼び出し、falseが帰ったらすぐに戻ること。
 		 */
 		bool CheckBinaryCompatibility() const {
-			versionInfo->pluginCompatibilityVersion = raw::COMPATILBILITY_VERSION;
-			if (versionInfo->compatibilityVersion == raw::COMPATILBILITY_VERSION) {
+			versionInfo->pluginCompatibilityVersion = raw::COMPATIBILITY_VERSION;
+			if (versionInfo->compatibilityVersion == raw::COMPATIBILITY_VERSION) {
 				return true;
 			}
 			else {
