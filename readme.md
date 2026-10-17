@@ -6,22 +6,27 @@
     </div>
 </div>
 
-## 这是什么？
-这是用于伺か（Ukagaka）幽灵的 SHIORI「蒼空」的开发项目的中文化分支。
+## 这里是什么？
+这是用于伪春菜（伺か Ukagaka）人格的 SHIORI「蒼空」的开发项目的个人中文化分支。
 
+## 人格对话框中的报错显示日文?
+虽然原作者没说,但你可以在人格根目录（和 ghost.asproj 同级）新建文本文件 `ghost.aslang`，第一行写：
+```
+zh-cn
+```
 ## 试试看
-可以从 Release 页面下载演示幽灵或 SHIORI 本体 dll。
+可以从 Release 页面下载演示人格或 SHIORI 本体 dll。
 还有针对 VSCode 的小扩展功能。
 
 [wiki页面](https://github.com/mociweishen/aosora-shiori/wiki) 上写有规格指南等，有兴趣的话可以看看。
 
 ## 使用条款等
-分发的 aosora.dll 可作为伺か幽灵用的 SHIORI・SAORI 自由使用和分发。
+分发的 aosora.dll 可作为伪春菜人格用的 SHIORI・SAORI 自由使用和分发。
 源文件的许可证尚未确定，因此除个别许可的情况外，请仅用于个人使用或参与本项目的开发。
 本程序无任何保证。作者对因本程序引发的任何现象不承担责任。
 
 ## 关于构建
-* 启动仓库内的幽灵（/ssp/*）时
+* 启动仓库内的人格（/ssp/*）时
   * 需要构建 aosora.dll
 * 构建 vscode 扩展（/vscode-extension/*）时
   * 需要构建 aosora-sstp.exe

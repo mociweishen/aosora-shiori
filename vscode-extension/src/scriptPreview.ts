@@ -6,6 +6,7 @@ import * as iconv from 'iconv-lite';
 import { MessageOptions } from 'vscode';
 import GetMessage from './messages';
 import { IsBinaryExecutablePlatform } from './utility';
+import * as util from './utility';
 
 const ERROR_CODE_INVALID_ARGS = 1;
 const ERROR_CODE_GHOST_NOT_FOUND = 2;
@@ -74,15 +75,31 @@ export async function SendPreviewFunction(sendScript:SendScript, extensionPath:s
 }
 
 function ExitCodeToString(code?:number){
-	if(code == ERROR_CODE_GHOST_NOT_FOUND) {
-		return "找不到脚本目标的 ghost。";
-	}
-	else if(code == ERROR_CODE_GHOST_SCRIPT_ERROR) {
-		return "脚本读取错误。请检查 ghost 脚本是否保存正确。";
-	}
-	else if(code == ERROR_CODE_PREVIEW_SCRIPT_ERROR) {
-		return "预览脚本出现读取错误。";
+	if (util.IsChineseLanguage()) {
+		if(code == ERROR_CODE_GHOST_NOT_FOUND) {
+			return "找不到脚本目标的 ghost。";
+		}
+		else if(code == ERROR_CODE_GHOST_SCRIPT_ERROR) {
+			return "脚本读取错误。请检查 ghost 脚本是否保存正确。";
+		}
+		else if(code == ERROR_CODE_PREVIEW_SCRIPT_ERROR) {
+			return "预览脚本出现读取错误。";
+		}
+		
+		return "发送预览时出错。";
+	} 
+	else {
+		if(code == ERROR_CODE_GHOST_NOT_FOUND) {
+			return "スクリプト送信先のゴーストが見つかりませんでした。";
+		}
+		else if(code == ERROR_CODE_GHOST_SCRIPT_ERROR) {
+			return "スクリプト読み込みエラーです。ゴーストのスクリプトが正しい状態で保存されているか確認してみてください。";
+		}
+		else if(code == ERROR_CODE_PREVIEW_SCRIPT_ERROR) {
+			return "プレビュースクリプトで読み込みエラーが発生しました。";
+		}
+		
+		return "プレビュー送信でエラーが発生しました。";
 	}
 	
-	return "发送预览时出错。";
 }

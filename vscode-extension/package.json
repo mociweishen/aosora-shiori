@@ -1,9 +1,9 @@
 {
-  "name": "aosora-shiori",
+  "name": "aosora-shiori-zh-cn",
   "displayName": "Aosora SHIORI zh-cn",
   "publisher": "kanadelab",
   "description": "Aosora SHIORI extension zh-cn",
-  "version": "1.0.9",
+  "version": "1.0.11",
   "repository": "https://github.com/kanadelab/aosora-shiori.git",
   "icon": "aosora-icon.png",
   "engines": {
